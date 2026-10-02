@@ -1,0 +1,102 @@
+{% extends 'subscriptions/base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <h3>Налаштування профілю</h3>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-md-3">
+        <div class="saas-card p-0 overflow-hidden">
+            <div class="list-group list-group-flush" id="profilePills" role="tablist">
+                <button class="list-group-item list-group-item-action active border-0 py-3 text-start" id="pills-personal-tab" data-bs-toggle="pill" data-bs-target="#pills-personal" type="button" role="tab" aria-controls="pills-personal" aria-selected="true">Персональні дані</button>
+                <button class="list-group-item list-group-item-action border-0 py-3 text-start" id="pills-security-tab" data-bs-toggle="pill" data-bs-target="#pills-security" type="button" role="tab" aria-controls="pills-security" aria-selected="false">Безпека</button>
+                <button class="list-group-item list-group-item-action border-0 py-3 text-start" id="pills-currency-tab" data-bs-toggle="pill" data-bs-target="#pills-currency" type="button" role="tab" aria-controls="pills-currency" aria-selected="false">Налаштування валюти</button>
+                <button class="list-group-item list-group-item-action border-0 py-3 text-start" id="pills-notifications-tab" data-bs-toggle="pill" data-bs-target="#pills-notifications" type="button" role="tab" aria-controls="pills-notifications" aria-selected="false">Сповіщення</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-9">
+        <div class="tab-content" id="profilePillsContent">
+
+            <div class="tab-pane fade show active" id="pills-personal" role="tabpanel" aria-labelledby="pills-personal-tab">
+                <div class="saas-card">
+                    <h5 class="mb-4 fw-bold">Персональні дані</h5>
+                    <div class="d-flex align-items-start gap-4">
+                        <div class="position-relative">
+                            <img src="https://ui-avatars.com/api/?name={{ request.user.username }}&background=E0E4E8&size=100" class="rounded-circle" alt="Avatar">
+                            <button class="btn btn-sm btn-dark position-absolute bottom-0 end-0 rounded-circle">✎</button>
+                        </div>
+                        <div class="flex-grow-1 row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small">Ім'я користувача</label>
+                                <input type="text" class="form-control" value="{{ request.user.username }}" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small">Email</label>
+                                <input type="email" class="form-control" value="{{ request.user.email|default:'email@example.com' }}">
+                            </div>
+                            <div class="col-12 mt-4">
+                                <button class="btn btn-primary-saas" onclick="alert('Персональні зміни успішно зафіксовані в сесії!');">Зберегти зміни</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="pills-security" role="tabpanel" aria-labelledby="pills-security-tab">
+                <div class="saas-card">
+                    <h5 class="mb-4 fw-bold">Параметри безпеки акаунта</h5>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label text-muted small">Поточний пароль</label>
+                        <input type="password" class="form-control mb-2" placeholder="********">
+                        <label class="form-label text-muted small">Новий безпечний пароль</label>
+                        <input type="password" class="form-control" placeholder="Введіть новий пароль">
+                    </div>
+                    <button class="btn btn-outline-dark mb-4 px-4" onclick="alert('Запит на модифікацію пароля успішно надіслано.');">Змінити пароль</button>
+                    <div class="form-check form-switch pt-3 border-top">
+                        <input class="form-check-input" type="checkbox" id="2faSwitch">
+                        <label class="form-check-label fw-bold small" for="2faSwitch">Двофакторна автентифікація (2FA)</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="pills-currency" role="tabpanel" aria-labelledby="pills-currency-tab">
+                <div class="saas-card">
+                    <h5 class="mb-3 fw-bold">Глобальні валютні налаштування</h5>
+                    <label class="form-label text-muted small">Оберіть базову розрахункову валюту для конвертації Monobank:</label>
+                    <div class="col-md-6 mb-3">
+                        <select class="form-select">
+                            <option value="UAH" selected>Українська гривня (₴)</option>
+                            <option value="USD">Долар США ($)</option>
+                            <option value="EUR">Євро (€)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary-saas px-4" onclick="alert('Основну валюту системи перенастроєно.');">Зберегти</button>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="pills-notifications" role="tabpanel" aria-labelledby="pills-notifications-tab">
+                <div class="saas-card">
+                    <h5 class="mb-3 fw-bold">Налаштування таймерів алгоритму сповіщень</h5>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="notif1" checked>
+                        <label class="form-check-label small" for="notif1">Попереджувальний статус (за 3 дні до оплати)</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="notif2" checked>
+                        <label class="form-check-label small" for="notif2">Критичне push-сповіщення на дашборді (за 1 день)</label>
+                    </div>
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="notif3">
+                        <label class="form-check-label small" for="notif3">Щотижневий звіт сумарних лімітів на email</label>
+                    </div>
+                    <button class="btn btn-primary-saas px-4" onclick="alert('Конфігурацію сповіщень збережено.');">Зберегти тригери</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

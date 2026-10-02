@@ -1,0 +1,155 @@
+{% extends 'subscriptions/base.html' %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <h3 class="mb-0">Аналітика витрат</h3>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-secondary active">₴</button>
+            <button type="button" class="btn btn-outline-secondary">$</button>
+            <button type="button" class="btn btn-outline-secondary">€</button>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <div class="saas-card h-100">
+            <h5 class="mb-4">Динаміка витрат за рік</h5>
+            <div style="height: 250px; position: relative;">
+                <canvas id="analyticsLineChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="saas-card h-100">
+            <h5 class="mb-4">Розподіл за категоріями</h5>
+            <div style="height: 140px; position: relative;" class="mb-3">
+                <canvas id="analyticsPieChart"></canvas>
+            </div>
+
+            <div class="d-flex flex-column gap-2 border-top pt-3">
+                {% for item in category_data %}
+                    <div class="d-flex justify-content-between align-items-center small">
+                        <span><span class="text-success me-1">●</span> {{ item.category__name|default:"Загальне" }}</span>
+                        <span class="fw-bold">₴{{ item.total }}</span>
+                    </div>
+                {% empty %}
+                    <p class="text-muted small text-center m-0">Немає даних для групування</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+        <div class="saas-card h-100">
+            <h5 class="mb-4">Найдорожчі підписки</h5>
+            <div class="table-responsive">
+                <table class="table table-borderless m-0">
+                    <thead class="text-muted border-bottom small">
+                        <tr>
+                            <th>Сервіс</th>
+                            <th>Оригінальна ціна</th>
+                            <th>В еквіваленті</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        {% for sub in expensive_subs %}
+                            <tr>
+                                <td class="fw-bold py-3">{{ sub.service_name }}</td>
+                                <td class="py-3">{{ sub.price }} {{ sub.currency }}</td>
+                                <td class="py-3 fw-bold text-success">₴{{ sub.price_uah }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-muted text-center py-4">У вас немає активних підписок</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+        <div class="saas-card h-100">
+            <h5 class="mb-4">Місячні витрати</h5>
+            <div style="height: 200px; position: relative;">
+                <canvas id="analyticsBarChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const monthsLabels = [{% for m in chart_months %}"{{ m }}",{% endfor %}];
+        const chartValuesData = [{% for v in chart_values %}{{ v }},{% endfor %}];
+
+        // 1. Лінійний графік тренду витрат
+        const ctxLine = document.getElementById('analyticsLineChart').getContext('2d');
+        new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: monthsLabels,
+                datasets: [{
+                    label: 'Обсяг витрат (грн)',
+                    data: chartValuesData,
+                    borderColor: '#42A5F5',
+                    backgroundColor: 'rgba(66, 165, 245, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // 2. Пончикова діаграма категорій
+        const ctxPie = document.getElementById('analyticsPieChart').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: [{% for item in category_data %}"{{ item.category__name|default:'Загальне' }}",{% endfor %}],
+                datasets: [{
+                    data: [{% for item in category_data %}{{ item.total }},{% endfor %}],
+                    backgroundColor: ['#4CAF50', '#42A5F5', '#FFA726', '#EC407A', '#AB47BC']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // 3. Стовпчикова гістограма місячних витрат
+        const ctxBar = document.getElementById('analyticsBarChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: monthsLabels,
+                datasets: [{
+                    label: 'Сума (грн)',
+                    data: chartValuesData,
+                    backgroundColor: '#4CAF50',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    });
+</script>
+{% endblock %}

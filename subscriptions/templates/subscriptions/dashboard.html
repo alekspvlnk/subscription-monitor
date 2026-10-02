@@ -1,0 +1,158 @@
+{% extends 'subscriptions/base.html' %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="row mb-2">
+    <div class="col-12">
+        {% for sub in active_subs %}
+            {% if sub.payment_status == 'critical' %}
+                <div class="alert alert-danger d-flex align-items-center justify-content-between rounded-3 shadow-sm py-3 mb-3 border-0" role="alert">
+                    <div>
+                        <strong class="me-2">🚨 Критичне сповіщення!</strong>
+                        Завтра списання коштів за підписку <span class="fw-bold">{{ sub.service_name }}</span> ({{ sub.price }} {{ sub.currency }}).
+                    </div>
+                    <span class="badge bg-danger">Залишився 1 день</span>
+                </div>
+            {% elif sub.payment_status == 'overdue' %}
+                <div class="alert alert-dark d-flex align-items-center justify-content-between rounded-3 shadow-sm py-3 mb-3 border-0 text-white bg-dark bg-opacity-75" role="alert">
+                    <div>
+                        <strong class="me-2">⚠️ Прострочено!</strong>
+                        Платіж за сервіс <span class="fw-bold">{{ sub.service_name }}</span> мав відбутися <span class="fw-bold">{{ sub.next_payment|date:"d.m.Y" }}</span>. Оновіть дату.
+                    </div>
+                    <span class="badge bg-secondary">Прострочено</span>
+                </div>
+            {% elif sub.payment_status == 'warning' %}
+                <div class="alert alert-warning d-flex align-items-center justify-content-between rounded-3 shadow-sm py-3 mb-3 border-0" role="alert">
+                    <div>
+                        <strong class="me-2">⏳ Наближається оплата.</strong>
+                        Дата чергового списання за сервіс <span class="fw-bold">{{ sub.service_name }}</span> через {{ sub.days_left }} дн.
+                    </div>
+                    <span class="badge bg-warning text-dark">Невдовзі</span>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-12 col-md-8">
+        <div class="saas-card d-flex justify-content-between align-items-center h-100">
+            <div>
+                <h6 class="text-muted mb-2">Загальні витрати (місяць)</h6>
+                <h2 class="text-success mb-0 fw-bold">₴ {{ total_cost|default:"0" }}</h2>
+            </div>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-secondary active">₴</button>
+                <button type="button" class="btn btn-outline-secondary">$</button>
+                <button type="button" class="btn btn-outline-secondary">€</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="saas-card h-100">
+            <h6 class="text-muted mb-2">Активні підписки</h6>
+            <h2 class="mb-0 fw-bold">{{ active_subs|length }}</h2>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-6">
+        <div class="saas-card h-100">
+            <h5 class="mb-4">Динаміка витрат</h5>
+            <div style="height: 250px; position: relative;">
+                <canvas id="lineChartDashboard"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-3">
+        <div class="saas-card h-100">
+            <h5 class="mb-4">Витрати за категоріями</h5>
+            <div style="height: 200px; position: relative;" class="d-flex align-items-center justify-content-center">
+                {% if category_data %}
+                    <canvas id="pieChartDashboard"></canvas>
+                {% else %}
+                    <small class="text-muted text-center">Немає даних для аналізу</small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-3">
+        <a href="{% url 'subscriptions:add' %}" class="btn btn-primary-saas w-100 mb-4">+ Додати підписку</a>
+        <div class="saas-card h-100 p-3">
+            <h6 class="mb-3">Найближчі платежі</h6>
+            {% for sub in active_subs|slice:":3" %}
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-dark text-white rounded p-2 me-2 fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 14px;">
+                            {{ sub.service_name|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <p class="mb-0 fw-bold small" style="font-size: 13px;">{{ sub.service_name }}</p>
+                            <small class="{% if sub.payment_status == 'critical' %}text-danger fw-bold{% elif sub.payment_status == 'warning' %}text-warning fw-bold{% elif sub.payment_status == 'overdue' %}text-muted text-decoration-line-through{% else %}text-muted{% endif %}" style="font-size: 11px;">
+                                {{ sub.next_payment|date:"d.m.Y" }}
+                            </small>
+                        </div>
+                    </div>
+                    <span class="fw-bold small text-nowrap {% if sub.payment_status == 'critical' %}text-danger{% endif %}">
+                        {{ sub.price }} {{ sub.currency }}
+                    </span>
+                </div>
+            {% empty %}
+                <p class="text-muted small text-center py-4 m-0">Немає запланованих платежів</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // 1. Налаштування Лінійного графіка
+        const ctxLine = document.getElementById('lineChartDashboard').getContext('2d');
+        new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: [{% for m in chart_months %}"{{ m }}",{% endfor %}],
+                datasets: [{
+                    label: 'Витрати в грн',
+                    data: [{% for v in chart_values %}{{ v }},{% endfor %}],
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        // 2. Налаштування Кругового графіка
+        {% if category_data %}
+        const ctxPie = document.getElementById('pieChartDashboard').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: [{% for item in category_data %}"{{ item.category__name|default:'Загальне' }}",{% endfor %}],
+                datasets: [{
+                    data: [{% for item in category_data %}{{ item.total }},{% endfor %}],
+                    backgroundColor: ['#4CAF50', '#42A5F5', '#FFA726', '#EC407A', '#AB47BC']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+        {% endif %}
+    });
+</script>
+{% endblock %}

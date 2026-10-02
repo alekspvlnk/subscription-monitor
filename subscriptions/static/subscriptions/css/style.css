@@ -1,0 +1,93 @@
+:root {
+    --bg-light: #F4F7F6;
+    --bg-dark: #1F232D;
+    --sidebar-bg: #1B2028;
+    --primary-color: #4CAF50; /* SaaS Green Accent */
+    --text-main: #333333;
+    --text-muted: #777777;
+    --card-bg: #FFFFFF;
+    --border-radius: 16px;
+    --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+body {
+    background-color: var(--bg-light);
+    color: var(--text-main);
+    font-family: 'Inter', -apple-system, sans-serif;
+}
+
+/* Sidebar */
+.sidebar {
+    background-color: var(--sidebar-bg);
+    min-height: 100vh;
+    color: white;
+    padding-top: 2rem;
+}
+.sidebar .nav-link {
+    color: #A0A5B1;
+    border-radius: 8px;
+    margin: 4px 16px;
+    padding: 12px 20px;
+    transition: 0.3s;
+}
+.sidebar .nav-link:hover, .sidebar .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* Cards (Glassmorphism / Soft shadow) */
+.saas-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-soft);
+    padding: 24px;
+    border: none;
+    margin-bottom: 24px;
+}
+
+/* Buttons */
+.btn-primary-saas {
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    color: white;
+    font-weight: 500;
+}
+.btn-primary-saas:hover {
+    background-color: #45a049;
+    color: white;
+}
+
+/* Forms */
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #E0E4E8;
+    padding: 12px 16px;
+    box-shadow: none;
+}
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+}
+
+/* Auth Pages Wrapper */
+.auth-wrapper {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-light);
+}
+.auth-card {
+    width: 100%;
+    max-width: 400px;
+    overflow: hidden;
+    border-radius: var(--border-radius);
+}
+.auth-header {
+    background-color: var(--sidebar-bg);
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
