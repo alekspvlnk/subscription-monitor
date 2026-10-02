@@ -47,19 +47,26 @@ subscription_monitor/
 
 Local Setup & Installation
 1. Clone the repository
-Bash
+```Bash
 git clone [https://github.com/alekspvlnk/subscription-monitor.git](https://github.com/alekspvlnk/subscription-monitor.git)
 cd subscription-monitor
+```
 2. Create and activate a virtual environment
-Bash
+```Bash
 python -m venv .venv
+```
 # Windows:
+```Bash
 .venv\Scripts\activate
+```
 # Linux/macOS:
+```Bash
 source .venv/bin/activate
+```
 3. Install dependencies
-Bash
+```Bash
 pip install -r requirements.txt
+```
 4. Configure environment variables
 Create a .env file in the project root based on .env.example:
 
